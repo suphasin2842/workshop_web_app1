@@ -102,13 +102,19 @@ var todoGroup = app.MapGroup("/api/todos").WithTags("Todos");
 
 todoGroup.MapGet("/", async (AppDbContext db) =>
 {
-   var todos = await db.Todos.ToListAsync();
+    var todos = await db.Todos.ToListAsync();
+   
+    var todoGetDtos = todos.Select(t => 
+                            new TodoGetDto(
+                                t.Id, 
+                                t.Title, 
+                                t.IsCompleted));
 
-   return todos.Count == 0 ? Results.NotFound() : Results.Ok(todos);
+    return todoGetDtos.Count() == 0 ? Results.NotFound() : Results.Ok(todoGetDtos);
 });
 
 todoGroup.MapPost("/", async (AppDbContext db, TodoPostDto dto) =>
-{    
+{
     var lastTodo = await db.Todos.OrderByDescending(t => t.Id).FirstOrDefaultAsync();
     var nextId = lastTodo is null ? 1 : lastTodo.Id + 1;
 
